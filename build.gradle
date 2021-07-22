@@ -1,0 +1,26 @@
+apply plugin: 'war'
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+dependencies {
+  compile group: 'org.apache.logging.log4j', name: 'log4j-1.2-api', version: '2.14.1'
+  compile 'commons-io:commons-io:2.11.0'
+}
+
+
+task CopyVersion(type: Copy)  {
+
+    from 'src/main/resources/'
+    into "build/resources/main/"
+    filter { line -> line.replaceAll('hello Gradle', CurrentVersion) }
+                   
+}
+
+
+war.finalizedBy(CopyVersion)
+
+
+war.archiveName "Module4_"+CurrentVersion+".war"

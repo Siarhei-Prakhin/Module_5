@@ -25,7 +25,8 @@ task increment  {
     String minor=v.substring(v.lastIndexOf('.')+1) //get digit the digits after last dot
     int m=minor.toInteger()+1                      //increment
     String major=v.substring(0,v.length()-minor.length())       //get the beginning
-    println "Version with increment is: "+major+m
+    v=major+m
+    println "Version with increment is: "+v
     //println s
 
 }

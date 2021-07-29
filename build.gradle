@@ -40,8 +40,8 @@ task increment2 << {
     file.text = file.text.replace(v,major+m)
 //    println "ls -la".execute().text
     v='git tag '+major+m
-    println v.execute().text
-    println "git push origin --tags".execute().text
+//    println v.execute().text
+//    println "git push origin --tags".execute().text
     println "Version with increment is: "+v
 }
 

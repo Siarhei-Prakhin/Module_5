@@ -26,6 +26,7 @@ task increment << {
     int m=minor.toInteger()+1                      //increment
     String major=v.substring(0,v.length()-minor.length())       //get the beginning
     v=major+m
+    sed -i "s/'hello Gradle'/v/g" src/main/resources/greeting.txt
     println "Version with increment is: "+v
     //println s
 

@@ -38,8 +38,9 @@ task increment2 << {
     int m=minor.toInteger()+1                      //increment
     String major=v.substring(0,v.length()-minor.length())       //get the beginning
     file.text = file.text.replace(v,major+m)
-    println "git tag "+major+m.execute().text
-    println "git push origin --tags".execute().text
+    println "ls -la".execute().text
+//    println "git tag "+major+m.execute().text
+//    println "git push origin --tags".execute().text
     println "Version with increment is: "+v
 }
 

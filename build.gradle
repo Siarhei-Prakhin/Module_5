@@ -31,6 +31,15 @@ task increment << {
     println "Version with increment is: "+v
 }
 
+task increment2 << {
+    def file = new File("gradle.properties")
+    def v=CurrentVersion
+    String minor=v.substring(v.lastIndexOf('.')+1) //get digit the digits after last dot
+    int m=minor.toInteger()+1                      //increment
+    String major=v.substring(0,v.length()-minor.length())       //get the beginning
+    file.text = file.text.replace(v,major+m)
+    println "Version with increment is: "+v
+}
 
 task sorting << {
 def unsortedArray = ['1.1.3','1.1.0', '1.10.2', '1.9.1', '1.1.8', '1.1.15', '1.0.2']

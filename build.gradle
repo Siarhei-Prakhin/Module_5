@@ -62,4 +62,4 @@ println "Sorted Array: "+sortedArray
 war.finalizedBy(CopyVersion)
 
 
-war.archiveName "Module4_"+CurrentVersion+".war"
+war.archiveName "test.war"

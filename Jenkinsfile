@@ -1,7 +1,7 @@
 def NEXUS_REPO=''
 def VERSION=''
 def GITHUB_REPO='git@github.com:Siarhei-Prakhin/Module_5.git'
-def GITHUB_BRANCH='task5'
+def GITHUB_BRANCH='task6'
 def DOCKERHUB_REPO='siarheiprakhin/task6'
 pipeline {
   agent any

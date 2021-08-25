@@ -1,18 +1,19 @@
 def NEXUS_REPO=''
 def VERSION=''
+def GITHUB_REPO='git@github.com:Siarhei-Prakhin/Module_5.git'
+def GITHUB_BRANCH='task5'
+def DOCKERHUB_REPO='siarheiprakhin/task6'
 pipeline {
   agent any
   stages {
   stage('Cleaning_the_workspace') {
     steps {
-      sh "sudo rm -R * .gradle/ .git/ &>/dev/null"
+      cleanWs()
     }
   }
   stage('Download src from github') {
     steps {
-      git branch: 'task5', credentialsId: 'github-ssh-key', url: 'git@github.com:Siarhei-Prakhin/Module_5.git'
-      sh "pwd"
-      sh "sudo cp /home/vagrant/Dockerfile ."
+      git branch: "$GITHUB_BRANCH", credentialsId: 'github-ssh-key', url: "$GITHUB_REPO"
     }
   }
 
@@ -33,7 +34,6 @@ pipeline {
   }
   stage('Push incremented version to github with tag') {
     steps { script {
- //     vers = sh(returnStdout: true, script: 'cat ./src/main/resources/greeting.txt').trim()
       def vers='git tag '+readFile('src/main/resources/greeting.txt').trim()
       sh "$vers"
       sh "git add gradle.properties"
@@ -45,9 +45,12 @@ pipeline {
   }
 
 stage('Upload artifact to Nexus') {
+    environment {
+                NEXUS_CREDS = credentials('nexus')
+            }
     steps { script {
         NEXUS_REPO='http://localhost:8081/nexus/content/repositories/snapshots/test/'+readFile('src/main/resources/greeting.txt').trim()+'/test.war'
-      sh "curl -v -u admin:admin123 --upload-file build/libs/test.war $NEXUS_REPO"
+      sh "curl -v -u $NEXUS_CREDS --upload-file build/libs/test.war $NEXUS_REPO"
     }
   } 
                    }
@@ -55,11 +58,20 @@ stage('Docker') {
     steps { script {
           sh "wget $NEXUS_REPO"
           VERSION=readFile('src/main/resources/greeting.txt').trim()
-          sh "sudo docker build -t siarheiprakhin/task6:$VERSION --build-arg NEXUS_REPO_ARG=$NEXUS_REPO ."
-          sh "sudo docker push siarheiprakhin/task6:$VERSION"
-        
+          sh "docker build -t $DOCKERHUB_REPO:$VERSION --build-arg NEXUS_REPO_ARG=$NEXUS_REPO ."
+          
+          withDockerRegistry([ credentialsId: "dockerhub", url: "" ]) {
+          sh "docker push $DOCKERHUB_REPO:$VERSION"
+        }
+
           } 
                            }
-                    }       
+                    }  
+  stage('Update docker swarm image') {
+    steps {
+      sh "docker service update --image=$DOCKERHUB_REPO:$VERSION tomcat"
+    }
+  }                    
+                    
   }
 }

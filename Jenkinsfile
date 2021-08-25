@@ -39,7 +39,7 @@ pipeline {
       sh "git add gradle.properties"
       sh "git commit -m 'test'"
       sshagent(['github-ssh-key']) {
-           sh "git push origin task5 --tags"
+           sh "git push origin $GITHUB_BRANCH --tags"
                                   }
     }}
   }

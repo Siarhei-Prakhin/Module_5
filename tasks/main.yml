@@ -1,0 +1,10 @@
+---
+# tasks file for first_role
+  - block : #-----RedHat----------
+      - name: Install web-server
+        yum: name=httpd state=latest
+    when: ansible_os_family == "RedHat" 
+
+  - name: Copy web-page
+    copy: src=index.html dest="{{ WEB_SERVER_FOLDER }}" mode=0555
+ 

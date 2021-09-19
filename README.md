@@ -1,12 +1,11 @@
-# Module_7
-***
-The module consists of **2 parts**:
-1. Graphical monitoring stack (**Collectd, Influxdb, Grafana**)(see. *graphs* directory):  
-    a) **InfluxDB and Grafana** must be started by **docker-compose** in containers, **Collectd** must be started on machine which metrics we are going to collect.  
-    b) As a **result** of this stack usage we can receive such graphs:
-    ![](graphana.png)
+# Short workflow of DevOPS practical task №8
+## 1) Preparation stage:
+ a) Container "registry" was started.
+ b) Docker image was builded according to the Dockerfile in "temp" directory.
+ c) Then the image was taged (localhost:5000/mycentos8) and pushed to local registry.
+ d) The content was added to the file /etc/docker/daemon.json (to enable insecure registry option): { "insecure-registries" : [ "localhost:5000" ] }
 
-2. Logs monitoring stack (**Elasticsearch, Logstash, Kibana, Filebeat**)(see. *logs* directory):  
-    a) **Elasticsearch, Logstash, Kibana** must be started by **docker-compose** in containers, **Filebeat** must be started on machine which logs we are going to collect.  
-    b) As a **result** of this stack usage we can receive such view of collected logs:
-  ![](logs.png)
+## 2) Main stage:
+ a) The role was created (adding httpd, sending index.html)
+ b) Testinfra was choosen for tests.
+ c) Two tests are located in 'molecule/default/tests/test_default.py' ('Checking if the package is installed', 'Checking that file exists and contains the content').

@@ -1,3 +1,0 @@
----
-# vars file for first_role
-WEB_SERVER_FOLDER: /var/www/html

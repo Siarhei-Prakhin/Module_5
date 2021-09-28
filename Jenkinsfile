@@ -7,7 +7,7 @@ def jsonSlurper = new JsonSlurper()
 def object = jsonSlurper.parseText(artifactsObjectRaw)
 return object.tags''', multiSelectDelimiter: ',', name: 'Nginx_version', quoteValue: false, saveJSONParameterToFile: false, type: 'PT_SINGLE_SELECT', visibleItemCount: 5
 }
-agent no  
+agent none
 stages {
     stage("Test") {
       agent {

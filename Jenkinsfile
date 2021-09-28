@@ -12,8 +12,9 @@ return object.tags''', multiSelectDelimiter: ',', name: 'Nginx_version', quoteVa
 agent none
 
 stages {
-  agent any
+  
     stage('Download src from github') {
+      agent any
     steps {
       git branch: "$GITHUB_BRANCH", url: "$GITHUB_REPO"
     }

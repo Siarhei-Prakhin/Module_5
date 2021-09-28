@@ -16,6 +16,9 @@ stages {
           args "-t localhost:5000/mynginx:latest"
         }
       }
+            steps {
+        sh "docker images"
+      }
     }
 
 }

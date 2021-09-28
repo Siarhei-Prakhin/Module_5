@@ -28,7 +28,7 @@ stages {
         }
       }
             steps {
-        
+        sh "exit"
       }
     }
 

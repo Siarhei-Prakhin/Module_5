@@ -1,5 +1,6 @@
 def GITHUB_REPO='https://github.com/Siarhei-Prakhin/Module_5.git'
 def GITHUB_BRANCH='task9'
+def NGINX
 pipeline {
 parameters {
   extendedChoice bindings: '', description: 'Choose Nginx version', groovyClasspath: '', groovyScript: '''import groovy.json.JsonSlurper
@@ -24,6 +25,15 @@ stages {
              }
                                                                         }
   
+    stage('Build and push image to local repository') {
+       steps {
+         script {
+             def NGINX = docker.build("localhost:5000/mynginx")
+             NGINX.push('latest')
+                }
+             }
+                                                       }  
+
 
 }
 }

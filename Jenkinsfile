@@ -21,6 +21,7 @@ stages {
     stage("Test") {
       agent {
         dockerfile {
+          filename "/home/jenkins/workspace/test2/Dockerfile"
           additionalBuildArgs  '--build-arg NGINX_VERSION=$Nginx_version'
           args "-t localhost:5000/mynginx:latest"
         }

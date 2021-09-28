@@ -1,4 +1,4 @@
-def GITHUB_REPO='git@github.com:Siarhei-Prakhin/Module_5.git'
+def GITHUB_REPO='https://github.com/Siarhei-Prakhin/Module_5.git'
 def GITHUB_BRANCH='task9'
 pipeline {
 parameters {
@@ -22,7 +22,7 @@ stages {
     stage("Test") {
       agent {
         dockerfile {
-          filename "/home/jenkins/workspace/test2/Dockerfile"
+//          filename "/home/jenkins/workspace/test2/Dockerfile"
           additionalBuildArgs  '--build-arg NGINX_VERSION=$Nginx_version'
           args "-t localhost:5000/mynginx:latest"
         }

@@ -1,6 +1,6 @@
 def GITHUB_REPO='https://github.com/Siarhei-Prakhin/Module_5.git'
 def GITHUB_BRANCH='task9'
-def LOCAL_REPO_AND_IMAGE_NAME='localhost:5000/mynginx'
+def LOCAL_REPO_AND_IMAGE_NAME='localhost:5000/mynginx:latest'
 pipeline {
 parameters {
   extendedChoice bindings: '', description: 'Choose Nginx version', groovyClasspath: '', groovyScript: '''import groovy.json.JsonSlurper
@@ -29,7 +29,7 @@ stages {
        steps {
          script {
              def NGINX = docker.build("$LOCAL_REPO_AND_IMAGE_NAME")
-             NGINX.push('latest')
+             NGINX.push('')
                 }
              }
                                                        }  

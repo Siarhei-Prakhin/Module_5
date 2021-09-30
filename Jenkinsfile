@@ -28,7 +28,7 @@ stages {
     stage('Build and push image to local repository') {
        steps {
          script {
-             def NGINX = docker.build("$LOCAL_REPO_AND_IMAGE_NAME:$Nginx_version")
+             def NGINX = docker.build("$LOCAL_REPO_AND_IMAGE_NAME:latest")
              NGINX.push()
                 }
              }

@@ -39,7 +39,7 @@ stages {
                                                        }  
     stage('Ansible playbook2 execute') {
        steps {
-       ansiblePlaybook( playbook: 'playbook2.yml', inventory: 'hosts.txt', tags: 'Init', extras: '-vvv')
+       ansiblePlaybook( playbook: 'playbook2.yml', inventory: 'hosts.txt', tags: 'Init', extras: '-vvvv')
              }
                                        }
 

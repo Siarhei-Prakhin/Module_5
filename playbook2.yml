@@ -121,7 +121,7 @@
   become: yes
   gather_facts: no
 
-#  tasks:
+  tasks:
 #  - name: Bootstrap a host without python2 installed - update
 #    raw: apt update
 #    tags:

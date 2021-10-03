@@ -2,5 +2,5 @@
 swarm-VGmaster-node ansible_host=127.0.0.1
 
 [Workers]
-swarm-VGnode-1 ansible_host=192.168.10.3 ansible_ssh_private_key_file=./private_key_1 ansible_user=vagrant
-swarm-VGnode-2 ansible_host=192.168.10.4 ansible_ssh_private_key_file=./private_key_2 ansible_user=vagrant
+swarm-VGnode-1 ansible_host=192.168.10.3 ansible_ssh_private_key_file=/home/vagrant/private_key_1 ansible_user=vagrant
+swarm-VGnode-2 ansible_host=192.168.10.4 ansible_ssh_private_key_file=/home/vagrant/private_key_2 ansible_user=vagrant

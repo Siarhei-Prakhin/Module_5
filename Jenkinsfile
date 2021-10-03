@@ -13,7 +13,11 @@ return object.tags''', multiSelectDelimiter: ',', name: 'Nginx_version', quoteVa
 agent any
 
 stages {
-  
+  stage('Cleaning_the_workspace') {
+    steps {
+      cleanWs()
+    }
+  }  
     stage('Download src from github') {
        steps {
           git branch: "$GITHUB_BRANCH", url: "$GITHUB_REPO"

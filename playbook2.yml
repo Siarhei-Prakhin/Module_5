@@ -121,16 +121,16 @@
   become: yes
   gather_facts: no
 
-  tasks:
-  - name: Bootstrap a host without python2 installed - update
-    raw: apt update
-    tags:
-       - Init
+#  tasks:
+#  - name: Bootstrap a host without python2 installed - update
+#    raw: apt update
+#    tags:
+#       - Init
 
-  - name: Bootstrap a host without python2 installed - install python
-    raw: apt install -y python
-    tags:
-       - Init
+#  - name: Bootstrap a host without python2 installed - install python
+#    raw: apt install -y python
+#    tags:
+#       - Init
 
   - name: Add repo
     get_url:

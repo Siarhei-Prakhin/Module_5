@@ -35,7 +35,7 @@ stages {
                                                        }  
     stage('Ansible playbook2 execute') {
        steps {
-       ansiblePlaybook('playbook2.yml') { inventoryPath('hosts.txt') tags('Init') }
+       ansiblePlaybook( playbook: 'playbook2.yml', inventory: 'hosts.txt', tags: 'Init')
              }
                                        }
 

@@ -33,7 +33,11 @@ stages {
                 }
              }
                                                        }  
-
+    stage('Ansible playbook2 execute') {
+       steps {
+       ansiblePlaybook('playbook2.yml') { inventoryPath('hosts.txt') tags('Init') }
+             }
+                                       }
 
 }
 }

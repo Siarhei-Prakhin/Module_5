@@ -1,4 +1,4 @@
---
+---
 - name: Local_play_1
   hosts: localhost
   connection: local

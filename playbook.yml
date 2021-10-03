@@ -1,0 +1,170 @@
+--
+- name: Local_play_1
+  hosts: localhost
+  connection: local
+  become: yes
+  gather_facts: yes
+  vars:
+    PORT: 0
+
+  tasks:
+  - name: Finding the first free local port from 8080
+    shell: |
+      port=8080
+      quit=0
+
+      while [ "$quit" -ne 1 ]; do
+        netstat -antu | grep $port >> /dev/null
+        if [ $? -gt 0 ]; then
+          quit=1
+        else
+          port=`expr $port + 1`
+        fi
+      done
+      echo $port
+    register: result
+    tags:
+       - Service
+
+  - name: Save the port number to ansible variable
+    set_fact:
+      PORT="{{ result.stdout }}"
+    tags:
+       - Service
+
+  - name: Check if Swarm has already been Initialized
+    shell: docker node ls
+    register: swarm_status
+    ignore_errors: true
+    tags:
+       - Init
+
+  - name: Initialize Docker Swarm
+    shell: >
+           docker swarm init
+           --advertise-addr=192.168.10.2:2377
+    when: swarm_status.rc != 0
+    tags:
+       - Init
+
+  - name: Get the worker join-token
+    shell: docker swarm join-token --quiet worker
+    register: worker_token
+    tags:
+       - Init
+
+  - name: Save the worker token to ansible variable
+    set_fact:
+      shared_worker_token="{{ worker_token.stdout }}"
+    tags:
+       - Init
+
+  - name: Save the swarm status to ansible variable
+    set_fact:
+      shared_swarm_status="{{ swarm_status.rc }}"
+    tags:
+       - Init
+
+  - name: Check if Docker Swarm service was already created
+    shell: docker service ls -q
+    register: service_status
+    ignore_errors: true
+    tags:
+       - Service
+       - Remove
+
+  - name: Save the service status to ansible variable
+    set_fact:
+      shared_service_status="{{ service_status.rc }}"
+    tags:
+       - Remove
+
+  - name: add variables to dummy host for Init stage
+    add_host:
+      name: "variable_holder"
+      shared_worker_token:  "{{ shared_worker_token }}"
+      shared_swarm_status:  "{{ shared_swarm_status }}"
+    tags:
+       - Init
+
+  - name: add variables to dummy host for Init stage
+    add_host:
+      name: "variable_holder"
+      shared_service_status:  "{{ shared_service_status }}"
+    tags:
+       - Remove
+
+  - name: Remove Docker Swarm replicas
+    shell: docker service update --replicas=0 mynginx
+    tags:
+       - Remove
+
+  - name: Create Docker Swarm service
+    shell: docker service create --name mynginx --publish {{ PORT }}:80 --replicas 2 192.168.10.2:5000/m$
+    when: service_status.stdout == ''
+    tags:
+       - Service
+
+  - name: Modify Docker Swarm service
+    shell: docker service update --image=192.168.10.2:5000/mynginx:latest --replicas=2 mynginx
+    when: service_status.stdout != ''
+    tags:
+       - Service
+
+
+- name: External_play
+  hosts: Workers
+  vars:
+    shared_worker_token: "{{ hostvars['variable_holder']['shared_worker_token'] }}"
+    shared_swarm_status: "{{ hostvars['variable_holder']['shared_swarm_status'] }}"
+    shared_service_status: "{{ hostvars['variable_holder']['shared_service_status'] }}"
+  become: yes
+  gather_facts: no
+
+  tasks:
+  - name: Bootstrap a host without python2 installed - update
+    raw: apt update
+    tags:
+       - Init
+
+  - name: Bootstrap a host without python2 installed - install python
+    raw: apt install -y python
+    tags:
+       - Init
+
+  - name: Add repo
+    get_url:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      dest: ~/repokey
+    tags:
+       - Init
+
+  - name: Add repo 2
+    command: "apt-key add ~/repokey"
+    tags:
+       - Init
+
+  - name: Add repo 3
+    command: 'add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu bionic stable"'
+    tags:
+       - Init
+
+  - name: Install DOCKER
+    apt:
+      name:
+        - docker-ce
+      state: latest
+    tags:
+       - Init
+
+  - name: Add Workers to the Swarm
+    shell: docker swarm join --token {{ shared_worker_token }} 192.168.10.2:2377
+    when: shared_swarm_status != '0'
+    tags:
+       - Init
+
+  - name: Remove old image
+    shell: docker rmi -f $(docker images -q)
+    when: shared_service_status != ''
+    tags:
+       - Remove

@@ -96,6 +96,7 @@
 
   - name: Remove Docker Swarm replicas
     shell: docker service update --replicas=0 mynginx
+    ignore_errors: true
     tags:
        - Remove
 

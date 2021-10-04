@@ -162,7 +162,15 @@
     when: shared_swarm_status != '0'
     tags:
        - Init
-
+       
+  - name: Copying file that enables insecure docker registry
+    copy:
+      src: /home/vagrant/daemon_sw.json
+      dest: /etc/docker/daemon.json
+      mode: 0777    
+    tags:
+       - Init
+    
   - name: Remove old image
     shell: docker rmi -f $(docker images -q)
     when: shared_service_status != ''

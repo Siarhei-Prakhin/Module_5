@@ -101,7 +101,7 @@
        - Remove
 
   - name: Create Docker Swarm service
-    shell: docker service create --name mynginx --publish {{ PORT }}:80 --replicas 2 192.168.10.2:5000/m$
+    shell: docker service create --name mynginx --publish {{ PORT }}:80 --replicas 2 192.168.10.2:5000/mynginx:latest
     when: service_status.stdout == ''
     tags:
        - Service

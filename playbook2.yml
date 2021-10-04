@@ -175,5 +175,6 @@
   - name: Remove old image
     shell: docker rmi -f $(docker images -q)
     when: shared_service_status != ''
+    ignore_errors: true
     tags:
        - Remove

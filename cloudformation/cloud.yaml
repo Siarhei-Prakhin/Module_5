@@ -1,0 +1,275 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: "VPC, 2*Subnets, RouteTables, InternetGW, LaunchConfig, AutoScalling, LoadBalancer"
+
+Metadata:
+ AWS::CloudFormation::Interface: 
+    ParameterGroups: 
+      - 
+        Label: 
+          default: "Configuration-Parameters"
+        Parameters: 
+          - VPCName
+          - VPCBlock
+          - GWName
+          - RouteTableName
+          - Subnet1Name
+          - Subnet2Name
+          - KeyPairName
+          - LaunchConfigName
+          - LoadBalancerName
+          - AutoScallingGroupName
+          - PublicSubnetACIDR
+          - PublicSubnetBCIDR
+          - LaunchInstanceType
+
+Parameters:
+  VPCName:
+    Type: String
+    Default: "Test-VPC"
+    Description: "VPC-name"
+
+  VPCBlock:
+    Type: String
+    Default: '10.10.10.0/24'
+  
+  PublicSubnetACIDR: 
+    Type: String
+    Default: '10.10.10.0/25'
+    Description: "Public Subnet-A CIDR"
+
+  PublicSubnetBCIDR: 
+    Type: String
+    Default: '10.10.10.128/25'
+    Description: "Public Subnet-B CIDR"   
+
+  GWName: 
+    Type: String
+    Default: 'MyInetGW'
+    Description: "Internet GW name"   
+
+  RouteTableName: 
+    Type: String
+    Default: 'MyRouteTable'
+    Description: "Route table name"   
+
+  Subnet1Name: 
+    Type: String
+    Default: 'MySubnet1'
+    Description: "Subnet 1 name"   
+
+  Subnet2Name: 
+    Type: String
+    Default: 'MySubnet2'
+    Description: "Subnet 2 name" 
+
+  KeyPairName: 
+    Type: String
+    Default: 'my_key_pair'
+    Description: "Keypair name in LaunchConfig" 
+
+  LaunchConfigName: 
+    Type: String
+    Default: 'MyLaunchConfig'
+    Description: "Launch configuration name" 
+
+  LoadBalancerName: 
+    Type: String
+    Default: 'MyLoadBalancer'
+    Description: "Load Balancer name" 
+
+  AutoScallingGroupName: 
+    Type: String
+    Default: 'MyAutoScallingGroup'
+    Description: "AutoScalling group name" 
+
+  LaunchInstanceType: 
+    Type: String
+    Default: 't2.micro'
+    Description: "Launch instance type" 
+
+Resources:
+#============= VPC ==================
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:                              # Creation and Attachment of Primary CIDR Block
+      CidrBlock: !Ref VPCBlock             
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Ref VPCName
+          
+#====== Internet Gateway =======
+  GatewayInternet:
+    Type: "AWS::EC2::InternetGateway"        # Creation
+    Properties: 
+      Tags:
+        - Key: Name
+          Value: !Ref GWName
+
+  GatewayAttachmentInternet:                       # Attachment IGW to VPC
+    Type: "AWS::EC2::VPCGatewayAttachment"
+    Properties:
+      VpcId:  !Ref VPC
+      InternetGatewayId: !Ref GatewayInternet
+  
+ 
+#====== Public RouteTables =========	  
+  RouteTableForPublicSubnet:                       # Creation of Route Table
+    Type: "AWS::EC2::RouteTable"                    
+    Properties:
+      VpcId: !Ref VPC
+      Tags:
+        - Key: Name
+          Value: !Ref RouteTableName
+
+          
+  RoutesForPublicRouteTable:                     # Creation and Attachment of Routes for Route Table
+    Type: "AWS::EC2::Route"
+    DependsOn: GatewayAttachmentInternet
+    Properties: 
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref GatewayInternet
+      RouteTableId: !Ref RouteTableForPublicSubnet
+          
+        
+ 
+#====== Associate Route Table to Subnets    
+  RouteAssociationPublicA:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref RouteTableForPublicSubnet
+      SubnetId: !Ref PublicSubnetA
+    
+  RouteAssociationPublicB:
+    Type: "AWS::EC2::SubnetRouteTableAssociation"
+    Properties:
+      RouteTableId: !Ref RouteTableForPublicSubnet
+      SubnetId: !Ref PublicSubnetB
+    
+          
+#============ Subnets and Security group======================================================	  
+  PublicSubnetA:
+    Type: "AWS::EC2::Subnet"
+    Properties: 
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+          - 0
+          - Fn::GetAZs: !Ref 'AWS::Region'
+      CidrBlock: !Ref "PublicSubnetACIDR"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Ref Subnet1Name
+
+  PublicSubnetB:
+    Type: "AWS::EC2::Subnet"
+    Properties: 
+      VpcId: !Ref VPC
+      AvailabilityZone: !Select
+          - 1
+          - Fn::GetAZs: !Ref 'AWS::Region'
+      CidrBlock: !Ref "PublicSubnetBCIDR"
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Ref Subnet2Name
+
+  EC2SecurityGroup:
+      Type: "AWS::EC2::SecurityGroup"
+      Properties:
+            GroupDescription: "my_sec_http_group"
+            GroupName: "my_sec_http_group"
+            VpcId: !Ref VPC
+            SecurityGroupIngress: 
+              - 
+                CidrIp: "0.0.0.0/0"
+                FromPort: 80
+                IpProtocol: "tcp"
+                ToPort: 80
+              - 
+                CidrIp: "0.0.0.0/0"
+                FromPort: 22
+                IpProtocol: "tcp"
+                ToPort: 22
+              - 
+                CidrIp: "0.0.0.0/0"
+                FromPort: 443
+                IpProtocol: "tcp"
+                ToPort: 443
+            SecurityGroupEgress: 
+              - 
+                CidrIp: "0.0.0.0/0"
+                FromPort: 80
+                IpProtocol: "tcp"
+                ToPort: 80
+              - 
+                CidrIp: "0.0.0.0/0"
+                FromPort: 22
+                IpProtocol: "tcp"
+                ToPort: 22
+              - 
+                CidrIp: "0.0.0.0/0"
+                FromPort: 443
+                IpProtocol: "tcp"
+                ToPort: 443
+
+#=================Launch config==========================================
+  MySimpleLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      LaunchConfigurationName: !Ref LaunchConfigName
+      ImageId: ami-074cce78125f09d61
+      KeyName: !Ref KeyPairName
+      SecurityGroups:
+        - !Ref EC2SecurityGroup
+      UserData: 
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          set +H
+          sudo yum -y update
+          sudo yum -y install httpd
+          echo "<html><body bgcolor=black><center><h1><p><font color=red>Hello_World!!!</h1></center></body></html>" > /var/www/html/index.html
+          sudo service httpd start
+      InstanceType: !Ref LaunchInstanceType
+
+#================Load Balancer=========================================
+  MyLoadBalancer:
+      Type: AWS::ElasticLoadBalancing::LoadBalancer
+      Properties:
+        LoadBalancerName: !Ref LoadBalancerName
+        Subnets: 
+          - !Ref PublicSubnetA
+          - !Ref PublicSubnetB
+        SecurityGroups:
+          - !Ref EC2SecurityGroup
+        Listeners:
+        - InstancePort: '80'
+          InstanceProtocol: HTTP
+          LoadBalancerPort: '80'
+          Protocol: HTTP
+        HealthCheck:
+          Target: "HTTP:80/index.html"
+          HealthyThreshold: '2'
+          UnhealthyThreshold: '3'
+          Interval: '10'
+          Timeout: '5'
+        Scheme: "internet-facing"
+
+#===================AutoScalling Group=====================================
+  MyAutoScallingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: !Ref AutoScallingGroupName
+      VPCZoneIdentifier:
+        - !Ref PublicSubnetA
+        - !Ref PublicSubnetB
+      LaunchConfigurationName: !Ref MySimpleLaunchConfig
+      MinSize: 2
+      MaxSize: 2
+      DesiredCapacity: 2
+      HealthCheckGracePeriod: 30
+      MaxInstanceLifetime: 2592000
+      LoadBalancerNames: 
+        - !Ref LoadBalancerName
+    DependsOn: MyLoadBalancer

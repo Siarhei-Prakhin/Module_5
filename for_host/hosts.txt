@@ -1,2 +1,0 @@
-[Virtual]
-swarm-VGmaster-node ansible_host=127.0.0.1
